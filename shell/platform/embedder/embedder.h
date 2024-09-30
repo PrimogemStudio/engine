@@ -2107,13 +2107,16 @@ typedef void (*FlutterNativeThreadCallback)(FlutterNativeThreadType type,
 
 /// AOT data source type.
 typedef enum {
-  kFlutterEngineAOTDataSourceTypeElfPath
+  kFlutterEngineAOTDataSourceTypeElfPath,
+  kFlutterEngineAOTDataSourceTypeElfMemory
 } FlutterEngineAOTDataSourceType;
 
 /// This struct specifies one of the various locations the engine can look for
 /// AOT data sources.
 typedef struct {
   FlutterEngineAOTDataSourceType type;
+  const uint8_t* data;
+  uint64_t size;
   union {
     /// Absolute path to an ELF library file.
     const char* elf_path;

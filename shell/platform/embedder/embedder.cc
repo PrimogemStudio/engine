@@ -1502,6 +1502,29 @@ FlutterEngineResult FlutterEngineCreateAOTData(
       *data_out = aot_data.release();
       return kSuccess;
     }
+    case kFlutterEngineAOTDataSourceTypeElfMemory: {
+      if (source->size == 0 || source->data == nullptr) {
+        return LOG_EMBEDDER_ERROR(kInvalidArguments,
+                                  "Invalid ELF memory specified.");
+      }
+      auto aot_data = std::make_unique<_FlutterEngineAOTData>();
+      const char* error = nullptr;
+      Dart_LoadedElf* loaded_elf = Dart_LoadELF_Memory(
+          source->data,                   // memory pointer
+          source->size,                   // memory size
+          &error,                         // error (out)
+          &aot_data->vm_snapshot_data,    // vm snapshot data (out)
+          &aot_data->vm_snapshot_instrs,  // vm snapshot instr (out)
+          &aot_data->vm_isolate_data,     // vm isolate data (out)
+          &aot_data->vm_isolate_instrs    // vm isolate instr (out)
+      );
+      if (loaded_elf == nullptr) {
+        return LOG_EMBEDDER_ERROR(kInvalidArguments, error);
+      }
+      aot_data->loaded_elf.reset(loaded_elf);
+      *data_out = aot_data.release();
+      return kSuccess;
+    }
   }
 
   return LOG_EMBEDDER_ERROR(
@@ -1575,7 +1598,7 @@ void PopulateAOTSnapshotMappingCallbacks(
       return std::make_unique<fml::NonOwnedMapping>(mapping, size);
     };
   };
-
+  
   if (SAFE_ACCESS(args, aot_data, nullptr) != nullptr) {
     settings.vm_snapshot_data =
         make_mapping_callback(args->aot_data->vm_snapshot_data, 0);

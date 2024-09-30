@@ -281,12 +281,7 @@ PersistentCache::PersistentCache(bool read_only)
     : is_read_only_(read_only),
       cache_directory_(MakeCacheDirectory(cache_base_path_, read_only, false)),
       sksl_cache_directory_(
-          MakeCacheDirectory(cache_base_path_, read_only, true)) {
-  if (!IsValid()) {
-    FML_LOG(WARNING) << "Could not acquire the persistent cache directory. "
-                        "Caching of GPU resources on disk is disabled.";
-  }
-}
+          MakeCacheDirectory(cache_base_path_, read_only, true)) {}
 
 PersistentCache::~PersistentCache() = default;
 

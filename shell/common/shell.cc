@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "assets/jar_asset_bundle.h"
 #include "flutter/assets/directory_asset_bundle.h"
 #include "flutter/common/constants.h"
 #include "flutter/common/graphics/persistent_cache.h"
@@ -133,7 +134,15 @@ void PerformInitializationTasks(Settings& settings) {
 
     if (settings.icu_initialization_required) {
       if (!settings.icu_data_path.empty()) {
-        fml::icu::InitializeICU(settings.icu_data_path);
+        if (JarAssetBundle::delegate.IsJarPath &&
+            JarAssetBundle::delegate.IsJarPath(settings.icu_data_path)) {
+          auto assets = JarAssetBundle::delegate.Create(settings.icu_data_path);
+          fml::icu::InitializeICUFromMapping(
+              assets->GetAsMapping(settings.icu_data_path));
+          delete assets;
+        } else {
+          fml::icu::InitializeICU(settings.icu_data_path);
+        }
       } else if (settings.icu_mapper) {
         fml::icu::InitializeICUFromMapping(settings.icu_mapper());
       } else {

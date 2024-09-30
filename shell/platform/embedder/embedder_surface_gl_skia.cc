@@ -118,12 +118,6 @@ sk_sp<GrDirectContext> EmbedderSurfaceGLSkia::CreateResourceContext() const {
       return nullptr;
     }
   }
-
-  // The callback was not available or failed.
-  FML_LOG(ERROR)
-      << "Could not create a resource context for async texture uploads. "
-         "Expect degraded performance. Set a valid make_resource_current "
-         "callback on FlutterOpenGLRendererConfig.";
   return nullptr;
 }
 

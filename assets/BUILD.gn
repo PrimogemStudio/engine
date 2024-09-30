@@ -9,6 +9,7 @@ source_set("assets") {
     "asset_resolver.h",
     "directory_asset_bundle.cc",
     "directory_asset_bundle.h",
+    "jar_asset_bundle.h",
   ]
 
   deps = [

@@ -7,6 +7,7 @@
 #include <sstream>
 #include <utility>
 
+#include "assets/jar_asset_bundle.h"
 #include "flutter/assets/directory_asset_bundle.h"
 #include "flutter/common/graphics/persistent_cache.h"
 #include "flutter/fml/file.h"
@@ -22,15 +23,21 @@ RunConfiguration RunConfiguration::InferFromSettings(
     IsolateLaunchType launch_type) {
   auto asset_manager = std::make_shared<AssetManager>();
 
-  if (fml::UniqueFD::traits_type::IsValid(settings.assets_dir)) {
-    asset_manager->PushBack(std::make_unique<DirectoryAssetBundle>(
-        fml::Duplicate(settings.assets_dir), true));
-  }
+  if (JarAssetBundle::delegate.IsJarPath &&
+      JarAssetBundle::delegate.IsJarPath(settings.assets_path)) {
+    asset_manager->PushBack(std::unique_ptr<JarAssetBundle>(
+        JarAssetBundle::delegate.Create(settings.assets_path)));
+  } else {
+    if (fml::UniqueFD::traits_type::IsValid(settings.assets_dir)) {
+      asset_manager->PushBack(std::make_unique<DirectoryAssetBundle>(
+          fml::Duplicate(settings.assets_dir), true));
+    }
 
-  asset_manager->PushBack(std::make_unique<DirectoryAssetBundle>(
-      fml::OpenDirectory(settings.assets_path.c_str(), false,
-                         fml::FilePermission::kRead),
-      true));
+    asset_manager->PushBack(std::make_unique<DirectoryAssetBundle>(
+        fml::OpenDirectory(settings.assets_path.c_str(), false,
+                           fml::FilePermission::kRead),
+        true));
+  }
 
   return {IsolateConfiguration::InferFromSettings(settings, asset_manager,
                                                   io_worker, launch_type),

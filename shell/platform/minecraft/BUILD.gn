@@ -1,0 +1,85 @@
+import("//flutter/testing/testing.gni")
+
+source_set("vulkan") {
+  public = [ "vulkan_manager.h" ]
+
+  sources = [
+    "vulkan_manager.cpp",
+    "vulkan_manager.h",
+  ]
+
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
+    "//build/config/compiler:enable_exceptions",
+    "//flutter/shell/platform/common:desktop_library_implementation",
+  ]
+
+  deps =
+      [ "//flutter/third_party/vulkan-deps/vulkan-headers/src:vulkan_headers" ]
+}
+
+source_set("flutter_minecraft_source") {
+  public = [ "system_utils.h" ]
+
+  sources = [
+    "event_loop.cc",
+    "event_loop.h",
+    "flutter_minecraft.cpp",
+    "glfw_defines.h",
+    "headless_event_loop.cc",
+    "headless_event_loop.h",
+    "jar_asset_bundle.cpp",
+    "jni.h",
+    "jni_md.h",
+    "jnipp.cpp",
+    "jnipp.h",
+    "key_event_handler.cc",
+    "key_event_handler.h",
+    "keyboard_hook_handler.h",
+    "platform_handler.cc",
+    "platform_handler.h",
+    "system_utils.cc",
+    "text_input_plugin.cc",
+    "text_input_plugin.h",
+  ]
+
+  configs += [
+    "//build/config/compiler:enable_exceptions",
+    "//flutter/shell/platform/common:desktop_library_implementation",
+  ]
+
+  deps = [
+    ":vulkan",
+    "//flutter/shell/platform/common:common_cpp",
+    "//flutter/shell/platform/common:common_cpp_input",
+    "//flutter/shell/platform/common:common_cpp_library_headers",
+    "//flutter/shell/platform/common/client_wrapper:client_wrapper",
+    "//flutter/shell/platform/embedder:embedder_as_internal_library",
+    "//flutter/third_party/rapidjson",
+    "//flutter/third_party/vulkan-deps/vulkan-headers/src:vulkan_headers",
+  ]
+
+  cflags = [ "-w" ]
+
+  if (is_linux) {
+    libs = [ "GL" ]
+
+    configs += [ "//flutter/shell/platform/linux/config:x11" ]
+  } else if (is_mac) {
+    frameworks = [
+      "CoreVideo.framework",
+      "IOKit.framework",
+    ]
+  }
+}
+
+shared_library("flutter_minecraft") {
+  deps = [ ":flutter_minecraft_source" ]
+
+  public_configs = [ "//flutter:config" ]
+}
+
+group("minecraft") {
+  deps = [ ":flutter_minecraft" ]
+}
